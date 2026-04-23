@@ -1,4 +1,4 @@
-# Skibidi YouTube Comments + Live Chat
+# Youtube comments + live chat replacement
 
 A tiny Chrome extension that rewrites YouTube comments and live chat messages to your chosen replacement text, while preserving word count and punctuation layout.
 
