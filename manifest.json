@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Skibidi YouTube Comments",
+  "version": "3.0.0",
+  "description": "Turns YouTube comments and live chat into your chosen replacement text.",
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ]
+}
