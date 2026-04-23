@@ -1,5 +1,5 @@
 const DEFAULT_SETTINGS = {
-  replacementText: "skibidi",
+  replacementText: "redacted",
   enabled: true
 };
 
@@ -18,6 +18,7 @@ function normalizeReplacementText(value) {
 }
 
 function loadSettings() {
+  // Initialize popup controls from persisted user settings.
   chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
     replacementInput.value = normalizeReplacementText(settings.replacementText);
     enabledCheckbox.checked = settings.enabled !== false;
@@ -28,6 +29,7 @@ function saveSettings() {
   const replacementText = normalizeReplacementText(replacementInput.value);
   const enabled = enabledCheckbox.checked;
 
+  // Persist settings so all YouTube tabs update consistently.
   chrome.storage.sync.set({ replacementText, enabled }, () => {
     replacementInput.value = replacementText;
     setStatus("Saved.");

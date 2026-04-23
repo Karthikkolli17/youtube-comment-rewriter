@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Skibidi YouTube Comments",
+  "name": "YouTube Comment Rewriter",
   "version": "3.0.0",
-  "description": "Turns YouTube comments and live chat into your chosen replacement text.",
+  "description": "Rewrites YouTube comments and live chat using customizable replacement text.",
   "permissions": [
     "storage"
   ],

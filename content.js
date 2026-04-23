@@ -16,7 +16,7 @@ const LIVE_CHAT_SELECTOR = [
 const TARGET_SELECTOR = [COMMENT_SELECTOR, LIVE_CHAT_SELECTOR].join(", ");
 
 const DEFAULT_SETTINGS = {
-  replacementText: "skibidi",
+  replacementText: "redacted",
   enabled: true
 };
 
@@ -31,13 +31,15 @@ function sanitizeReplacementText(value) {
 }
 
 function getNormalizedSettings(rawSettings = {}) {
+  // Keep settings resilient if storage is missing/invalid values.
   return {
     enabled: rawSettings.enabled !== false,
     replacementText: sanitizeReplacementText(rawSettings.replacementText)
   };
 }
 
-function skibidifyWithPunctuation(text, replacementText) {
+function rewriteWordsPreservingPunctuation(text, replacementText) {
+  // Replace only word tokens; keep separators/punctuation unchanged.
   return text.replace(/\b[\p{L}\p{N}_']+\b/gu, replacementText);
 }
 
@@ -47,39 +49,39 @@ function rewriteComment(node) {
   }
 
   const currentText = node.textContent ?? "";
-  const previousOutput = node.dataset.skibidiLastOutput;
-  const hadOriginalText = typeof node.dataset.skibidiOriginalText === "string";
-  const sourceText = hadOriginalText ? node.dataset.skibidiOriginalText : currentText;
+  const previousOutput = node.dataset.rewriterLastOutput;
+  const hadOriginalText = typeof node.dataset.rewriterOriginalText === "string";
 
+  // Detect external text updates and refresh the preserved source text.
   if (previousOutput && currentText !== previousOutput) {
-    node.dataset.skibidiOriginalText = currentText;
+    node.dataset.rewriterOriginalText = currentText;
   } else if (!hadOriginalText) {
-    node.dataset.skibidiOriginalText = currentText;
+    node.dataset.rewriterOriginalText = currentText;
   }
 
-  const stableSourceText = node.dataset.skibidiOriginalText ?? currentText;
+  const stableSourceText = node.dataset.rewriterOriginalText ?? currentText;
 
   if (!settings.enabled) {
     if (currentText !== stableSourceText) {
       node.textContent = stableSourceText;
     }
-    delete node.dataset.skibidiLastOutput;
-    delete node.dataset.skibidiRewritten;
+    delete node.dataset.rewriterLastOutput;
+    delete node.dataset.rewriterRewritten;
     return;
   }
 
-  const rewrittenText = skibidifyWithPunctuation(
+  const rewrittenText = rewriteWordsPreservingPunctuation(
     stableSourceText,
     settings.replacementText
   );
 
-  if (node.dataset.skibidiRewritten === "true" && currentText === rewrittenText) {
+  if (node.dataset.rewriterRewritten === "true" && currentText === rewrittenText) {
     return;
   }
 
   node.textContent = rewrittenText;
-  node.dataset.skibidiRewritten = "true";
-  node.dataset.skibidiLastOutput = rewrittenText;
+  node.dataset.rewriterRewritten = "true";
+  node.dataset.rewriterLastOutput = rewrittenText;
 }
 
 function rewriteAllComments(root = document) {
@@ -96,6 +98,7 @@ function scheduleRewrite(root = document) {
     return;
   }
 
+  // Batch frequent DOM updates into the next frame to reduce churn.
   pendingRewrite = true;
   requestAnimationFrame(() => {
     pendingRewrite = false;
